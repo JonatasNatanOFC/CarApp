@@ -1,11 +1,10 @@
 import { Image, StyleSheet, Platform } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-export default function HomeScreen() {
+export default function CarScreen() {
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#D2D2D2", dark: "#3D3D3D" }}
