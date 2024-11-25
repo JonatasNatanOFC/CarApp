@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     padding: 15,
     margin: 10,
     borderRadius: 10,
-    elevation: 3, // Sombra para o efeito 3D
+    elevation: 3,
     shadowColor: "black",
     shadowOpacity: 0.1,
     shadowOffset: { width: 1, height: 2 },

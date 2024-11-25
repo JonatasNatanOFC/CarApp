@@ -68,7 +68,6 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
     }
   };
 
-  // Cor do placeholder conforme o tema
   const placeholderColor = theme === "dark" ? "#B0B0B0" : "#808080";
 
   return (
@@ -86,7 +85,6 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
           >
             <View style={styles.boxContainer}>
               <ScrollView contentContainerStyle={styles.scrollView}>
-                {/* Campos de entrada */}
                 <TextInput
                   style={styles.boxInput}
                   placeholder="Tipo do Veículo"
@@ -154,7 +152,6 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
                 />
               </ScrollView>
 
-              {/* Botões de Adicionar e Cancelar */}
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={styles.buttonAdd}
@@ -203,14 +200,14 @@ const styles = StyleSheet.create({
   },
   boxInput: {
     width: 250,
-    height: 45, // Altura fixa para todos os campos
+    height: 45,
     borderColor: "#ccc",
     borderWidth: 1,
-    marginBottom: 15, // Espaçamento entre os campos
+    marginBottom: 15,
     paddingLeft: 10,
     borderRadius: 5,
     fontSize: 16,
-    textAlignVertical: "center", // Alinha o texto verticalmente no meio
+    textAlignVertical: "center",
   },
   buttonContainer: {
     marginTop: 20,
