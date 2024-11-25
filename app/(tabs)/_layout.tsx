@@ -18,22 +18,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Mostruario",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "home" : "home-outline"}
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: "Explore",
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon
-              name={focused ? "code-slash" : "code-slash-outline"}
+              name={focused ? "car" : "car-outline"}
               color={color}
             />
           ),
@@ -42,10 +30,10 @@ export default function TabLayout() {
       <Tabs.Screen
         name="car"
         options={{
-          title: "Car",
+          title: "Sobre",
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "car" : "car-outline"}
+              name={focused ? "options" : "options-outline"}
               color={color}
             />
           ),
