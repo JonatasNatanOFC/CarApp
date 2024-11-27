@@ -34,6 +34,19 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
 
   const theme = useColorScheme();
 
+  // Função para resetar os campos
+  const resetForm = () => {
+    setTypeCar("");
+    setBrandCar("");
+    setModel("");
+    setYear("");
+    setCondition("");
+    setColor("");
+    setValue("");
+    setFuelType("");
+    setImageCar("");
+  };
+
   const handleAddCar = () => {
     const valueNumber = parseFloat(value);
     const yearNumber = parseInt(year);
@@ -62,6 +75,7 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
       };
 
       onAdd(newCar);
+      resetForm();
       onCancel();
     } else {
       alert("Por favor, preencha todos os campos corretamente!");
@@ -161,7 +175,10 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.buttonCancel}
-                  onPress={onCancel}
+                  onPress={() => {
+                    resetForm();
+                    onCancel();
+                  }}
                 >
                   <Text style={styles.buttonText}>Cancelar</Text>
                 </TouchableOpacity>

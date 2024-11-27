@@ -1,9 +1,9 @@
 {
-  "name": "crudeventos",
+  "name": "car",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --tunnel",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -19,6 +19,7 @@
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-navigation/bottom-tabs": "^7.0.0",
     "@react-navigation/native": "^7.0.0",
+    "car": "file:",
     "crudeventos": "file:",
     "expo": "~52.0.11",
     "expo-blur": "~14.0.1",

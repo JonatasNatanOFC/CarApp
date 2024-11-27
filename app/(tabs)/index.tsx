@@ -82,7 +82,7 @@ const HomeScreen = () => {
       </View>
 
       <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
-        <Icon name="plus-circle" size={50} color="#4CAF50" />
+        <Icon name="plus-circle" size={50} color="#FFBA26" />
       </TouchableOpacity>
 
       <CarModal
