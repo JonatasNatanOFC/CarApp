@@ -20,8 +20,17 @@ export default function TabLayout() {
         options={{
           title: "Mostruario",
           tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name={focused ? "car" : "car-outline"} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="review"
+        options={{
+          title: "Revisões",
+          tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
-              name={focused ? "car" : "car-outline"}
+              name={focused ? "key" : "key-outline"}
               color={color}
             />
           ),
