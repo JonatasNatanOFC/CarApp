@@ -1,149 +1,186 @@
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   FlatList,
+  View,
   Text,
   StyleSheet,
-  View,
   TouchableOpacity,
   Image,
   useColorScheme,
-  StatusBar,
 } from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
-import CarModal from "../../components/modals/CarModal";
 import { CarInterface } from "../../interface/CarInterface";
+import CarModal from "../../components/modals/CarModal";
+import Icon from "react-native-vector-icons/FontAwesome";
 
-const HomeScreen = () => {
+export default function CarList() {
+  const [carData, setCarData] = useState<CarInterface[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [cars, setCars] = useState<CarInterface[]>([]);
+  const [selectedCar, setSelectedCar] = useState<CarInterface | null>(null);
   const theme = useColorScheme();
 
-  const openModal = () => {
+  const handleAddCar = (newCar: CarInterface) => {
+    setCarData((prevData) => [...prevData, newCar]);
+  };
+
+  const handleUpdateCar = (updatedCar: CarInterface) => {
+    setCarData((prevData) =>
+      prevData.map((car) =>
+        car.id === updatedCar.id ? { ...car, ...updatedCar } : car
+      )
+    );
+  };
+
+  const handleDeleteCar = (carToDelete: CarInterface) => {
+    setCarData((prevData) =>
+      prevData.filter((car) => car.id !== carToDelete.id)
+    );
+  };
+
+  const openModal = (car: CarInterface | null = null) => {
+    setSelectedCar(car);
     setModalVisible(true);
   };
 
   const closeModal = () => {
     setModalVisible(false);
+    setSelectedCar(null);
   };
 
-  const handleAddCar = (car: CarInterface) => {
-    setCars((prevCars) => [...prevCars, car]);
-    closeModal();
-  };
-
-  const handleRemoveCar = (index: number) => {
-    setCars((prevCars) => prevCars.filter((_, i) => i !== index));
-  };
-
-  const renderCarItem = ({
-    item,
-    index,
-  }: {
-    item: CarInterface;
-    index: number;
-  }) => (
+  const renderCarItem = ({ item }: { item: CarInterface }) => (
     <View style={styles.carItem}>
       <Image source={{ uri: item.imageCar }} style={styles.carImage} />
-
       <View style={styles.carInfo}>
-        <Text style={styles.carText}>{`${item.brandCar} ${item.model}`}</Text>
-        <Text style={styles.carText}>{`R$ ${item.value.toFixed(2)}`}</Text>
-        <Text style={styles.carText}>{`Ano: ${item.year}`}</Text>
-        <Text style={styles.carText}>{`Condição: ${item.condition}`}</Text>
-        <Text style={styles.carText}>{`Combustível: ${item.fuelType}`}</Text>
-      </View>
+        <Text style={styles.carText}>Marca: {item.brandCar}</Text>
+        <Text style={styles.carText}>Modelo: {item.model}</Text>
+        <Text style={styles.carText}>Cor: {item.color}</Text>
+        <Text style={styles.carText}>Ano: {item.year}</Text>
+        <Text style={styles.carText}>Condição: {item.condition}</Text>
 
-      <TouchableOpacity
-        onPress={() => handleRemoveCar(index)}
-        style={styles.deleteButton}
-      >
-        <Icon name="trash" size={20} color="white" />
-      </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.buttonEdit}
+            onPress={() => openModal(item)}
+          >
+            <Text style={styles.buttonText}>Editar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.buttonDelete}
+            onPress={() => handleDeleteCar(item)}
+          >
+            <Text style={styles.buttonText}>Deletar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <StatusBar
-        barStyle={theme === "dark" ? "light-content" : "dark-content"}
-        backgroundColor={theme === "dark" ? "#000000" : "#FFFFFF"}
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme === "dark" ? "#000" : "#fff" },
+      ]}
+    >
+      <Text
+        style={[styles.title, { color: theme === "dark" ? "#fff" : "#000" }]}
+      >
+        Lista de Carros
+      </Text>
+      <FlatList
+        data={carData}
+        renderItem={renderCarItem}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.listContainer}
       />
-
-      <View style={styles.container}>
-        <FlatList
-          data={cars}
-          renderItem={renderCarItem}
-          keyExtractor={(item, index) => index.toString()}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>Nenhum carro cadastrado.</Text>
-          }
-        />
-      </View>
-
-      <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
+      <TouchableOpacity style={styles.buttonAdd} onPress={() => openModal()}>
         <Icon name="plus-circle" size={50} color="#FFBA26" />
       </TouchableOpacity>
 
       <CarModal
         visible={modalVisible}
+        carData={selectedCar}
         onAdd={handleAddCar}
+        onUpdate={handleUpdateCar}
+        onDelete={handleDeleteCar}
         onCancel={closeModal}
       />
-    </SafeAreaView>
+    </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    justifyContent: "flex-start",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "bold",
+    marginBottom: 30,
+    textAlign: "center",
+  },
+  listContainer: {
+    flexGrow: 1,
+    width: "35%",
+    paddingBottom: 40,
   },
   carItem: {
-    padding: 15,
-    marginVertical: 5,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "white",
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    minHeight: 120,
+    marginBottom: 15,
+    backgroundColor: "#f1f1f1",
+    padding: 20,
+    borderRadius: 8,
+    width: 350,
+    alignItems: "flex-start",
+    height: 250,
   },
   carImage: {
-    width: 80,
-    height: 80,
+    width: 120,
+    height: 120,
+    borderRadius: 8,
+    marginRight: 15,
+  },
+  carInfo: {
+    justifyContent: "flex-start",
+    flexShrink: 1,
+    alignItems: "flex-start",
+  },
+  carText: {
+    fontSize: 18,
+    marginBottom: 8,
+    flexWrap: "wrap",
+    width: "100%",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    marginTop: 10,
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  buttonEdit: {
+    backgroundColor: "#4CAF50",
+    padding: 12,
     borderRadius: 5,
     marginRight: 10,
   },
-  carInfo: {
-    flex: 1,
-    justifyContent: "center",
+  buttonDelete: {
+    backgroundColor: "#F44336",
+    padding: 12,
+    borderRadius: 5,
   },
-  carText: {
-    fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 5,
-    color: "black",
-  },
-  emptyText: {
-    textAlign: "center",
-    color: "#888",
-    fontStyle: "italic",
-    marginTop: 20,
-  },
-  deleteButton: {
-    padding: 10,
-    backgroundColor: "#f44336",
+  buttonAdd: {
+    position: "absolute",
+    bottom: 5,
+    right: 5,
+    padding: 15,
     borderRadius: 50,
   },
-  floatingButton: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    zIndex: 1,
+  buttonText: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
   },
 });
-
-export default HomeScreen;

@@ -28,7 +28,11 @@ const ReviewScreen = () => {
   };
 
   const handleAddReview = (review: ReviewInterface) => {
-    setReviews((prevReviews) => [...prevReviews, review]);
+    const newReview = {
+      ...review,
+      id: reviews.length + 1,
+    };
+    setReviews((prevReviews) => [...prevReviews, newReview]);
     closeModal();
   };
 
@@ -45,14 +49,12 @@ const ReviewScreen = () => {
   }) => (
     <View style={styles.carItem}>
       <Image source={{ uri: item.imageCar }} style={styles.carImage} />
-
       <View style={styles.carInfo}>
-        <Text style={styles.carText}>{`${item.car}`}</Text>
+        <Text style={styles.carText}>{`Carro: ${item.car}`}</Text>
         <Text style={styles.carText}>{`Dono: ${item.ownerCar}`}</Text>
         <Text style={styles.carText}>{`Recebido: ${item.receivedDate}`}</Text>
         <Text style={styles.carText}>{`Entregar: ${item.deliveryDate}`}</Text>
       </View>
-
       <TouchableOpacity
         onPress={() => handleRemoveReview(index)}
         style={styles.deleteButton}
@@ -68,26 +70,26 @@ const ReviewScreen = () => {
         barStyle={theme === "dark" ? "light-content" : "dark-content"}
         backgroundColor={theme === "dark" ? "#000000" : "#FFFFFF"}
       />
-
       <View style={styles.container}>
         <FlatList
           data={reviews}
           renderItem={renderReviewItem}
-          keyExtractor={(item, index) => index.toString()}
+          keyExtractor={(item) => item.id.toString()}
           ListEmptyComponent={
             <Text style={styles.emptyText}>Nenhuma revisão cadastrada.</Text>
           }
         />
       </View>
-
       <TouchableOpacity style={styles.floatingButton} onPress={openModal}>
         <Icon name="plus-circle" size={50} color="#FFBA26" />
       </TouchableOpacity>
-
       <ReviewModal
         visible={modalVisible}
         onAdd={handleAddReview}
         onCancel={closeModal}
+        onUpdate={() => {}}
+        onDelete={() => {}}
+        reviewData={null}
       />
     </SafeAreaView>
   );

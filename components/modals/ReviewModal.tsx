@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   View,
@@ -13,43 +13,64 @@ import {
   Keyboard,
   useColorScheme,
 } from "react-native";
-import { ReviewInterface } from "../../interface/ReviewInterface";
+import { ReviewInterface } from "@/interface/ReviewInterface"; 
 
 export type ReviewModalProps = {
   visible: boolean;
-  onAdd: (car: ReviewInterface) => void;
+  reviewData: ReviewInterface | null; 
+  onAdd: (newReview: ReviewInterface) => void;
+  onUpdate: (updatedReview: ReviewInterface) => void;
+  onDelete: (review: ReviewInterface) => void;
   onCancel: () => void;
 };
 
-export default function CarModal({
+export default function ReviewModal({
   visible,
+  reviewData,
   onAdd,
+  onUpdate,
+  onDelete,
   onCancel,
 }: ReviewModalProps) {
-  const [deliveryDate, setDeliveryDate] = useState("");
-  const [receivedDate, setReceivedDate] = useState("");
   const [car, setCar] = useState("");
   const [ownerCar, setOwnerCar] = useState("");
+  const [receivedDate, setReceivedDate] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState("");
   const [imageCar, setImageCar] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const theme = useColorScheme();
 
-  // Função para resetar os campos
+  
+  useEffect(() => {
+    if (reviewData) {
+      setCar(reviewData.car);
+      setOwnerCar(reviewData.ownerCar);
+      setReceivedDate(reviewData.receivedDate);
+      setDeliveryDate(reviewData.deliveryDate);
+      setImageCar(reviewData.imageCar);
+    } else {
+      resetForm();
+    }
+  }, [reviewData]);
+
   const resetForm = () => {
-    setDeliveryDate("");
-    setReceivedDate("");
     setCar("");
     setOwnerCar("");
+    setReceivedDate("");
+    setDeliveryDate("");
     setImageCar("");
+    setErrorMessage(null);
   };
 
-  const handleAddCar = () => {
-    if (deliveryDate && receivedDate && car && ownerCar && imageCar) {
+  const handleAddReview = () => {
+    if (car && ownerCar && receivedDate && deliveryDate && imageCar) {
       const newReview: ReviewInterface = {
-        deliveryDate,
-        receivedDate,
+        id: Date.now(),
         car,
         ownerCar,
+        receivedDate,
+        deliveryDate,
         imageCar,
       };
 
@@ -57,7 +78,41 @@ export default function CarModal({
       resetForm();
       onCancel();
     } else {
-      alert("Por favor, preencha todos os campos corretamente!");
+      setErrorMessage("Por favor, preencha todos os campos corretamente!");
+    }
+  };
+
+  const handleUpdateReview = () => {
+    if (
+      reviewData &&
+      car &&
+      ownerCar &&
+      receivedDate &&
+      deliveryDate &&
+      imageCar
+    ) {
+      const updatedReview: ReviewInterface = {
+        ...reviewData,
+        car,
+        ownerCar,
+        receivedDate,
+        deliveryDate,
+        imageCar,
+      };
+
+      onUpdate(updatedReview);
+      resetForm();
+      onCancel();
+    } else {
+      setErrorMessage("Por favor, preencha todos os campos corretamente!");
+    }
+  };
+
+  const handleDeleteReview = () => {
+    if (reviewData) {
+      onDelete(reviewData);
+      resetForm();
+      onCancel();
     }
   };
 
@@ -70,7 +125,7 @@ export default function CarModal({
       transparent={true}
       onRequestClose={onCancel}
     >
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalBackground}>
           <KeyboardAvoidingView
             style={styles.container}
@@ -78,6 +133,9 @@ export default function CarModal({
           >
             <View style={styles.boxContainer}>
               <ScrollView contentContainerStyle={styles.scrollView}>
+                {errorMessage && (
+                  <Text style={styles.errorMessage}>{errorMessage}</Text>
+                )}
                 <TextInput
                   style={styles.boxInput}
                   placeholder="Carro"
@@ -94,21 +152,21 @@ export default function CarModal({
                 />
                 <TextInput
                   style={styles.boxInput}
-                  placeholder="Recebido"
+                  placeholder="Data Recebido"
                   value={receivedDate}
                   onChangeText={setReceivedDate}
                   placeholderTextColor={placeholderColor}
                 />
                 <TextInput
                   style={styles.boxInput}
-                  placeholder="Prazo de Entrega"
+                  placeholder="Data Entregar"
                   value={deliveryDate}
                   onChangeText={setDeliveryDate}
                   placeholderTextColor={placeholderColor}
                 />
                 <TextInput
                   style={styles.boxInput}
-                  placeholder="URL da Imagem do Veículo"
+                  placeholder="Imagem do Carro"
                   value={imageCar}
                   onChangeText={setImageCar}
                   placeholderTextColor={placeholderColor}
@@ -116,18 +174,32 @@ export default function CarModal({
               </ScrollView>
 
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.buttonAdd}
-                  onPress={handleAddCar}
-                >
-                  <Text style={styles.buttonText}>Adicionar</Text>
-                </TouchableOpacity>
+                {reviewData ? (
+                  <>
+                    <TouchableOpacity
+                      style={styles.buttonAdd}
+                      onPress={handleUpdateReview}
+                    >
+                      <Text style={styles.buttonText}>Atualizar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.buttonDelete}
+                      onPress={handleDeleteReview}
+                    >
+                      <Text style={styles.buttonText}>Deletar</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.buttonAdd}
+                    onPress={handleAddReview}
+                  >
+                    <Text style={styles.buttonText}>Adicionar</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={styles.buttonCancel}
-                  onPress={() => {
-                    resetForm();
-                    onCancel();
-                  }}
+                  onPress={onCancel}
                 >
                   <Text style={styles.buttonText}>Cancelar</Text>
                 </TouchableOpacity>
@@ -150,14 +222,11 @@ const styles = StyleSheet.create({
   container: {
     width: "90%",
     maxHeight: "80%",
-    marginBottom: 20,
   },
   boxContainer: {
-    width: "100%",
     backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
-    justifyContent: "flex-start",
     alignItems: "center",
   },
   scrollView: {
@@ -165,21 +234,25 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   boxInput: {
-    width: 250,
-    height: 45,
-    borderColor: "#ccc",
+    width: "100%",
+    height: 50,
     borderWidth: 1,
+    borderColor: "#ccc",
     marginBottom: 15,
-    paddingLeft: 10,
     borderRadius: 5,
+    paddingHorizontal: 10,
     fontSize: 16,
-    textAlignVertical: "center",
+  },
+  errorMessage: {
+    color: "red",
+    marginBottom: 10,
+    fontSize: 14,
   },
   buttonContainer: {
     marginTop: 20,
-    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
+    width: "100%",
   },
   buttonAdd: {
     backgroundColor: "#4CAF50",
@@ -187,8 +260,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 5,
   },
-  buttonCancel: {
+  buttonDelete: {
     backgroundColor: "#F44336",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonCancel: {
+    backgroundColor: "#553533",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,

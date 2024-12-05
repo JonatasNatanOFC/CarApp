@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   View,
@@ -13,15 +13,25 @@ import {
   Keyboard,
   useColorScheme,
 } from "react-native";
-import { CarInterface } from "../../interface/CarInterface";
+import { CarInterface } from "@/interface/CarInterface";
 
 export type CarModalProps = {
   visible: boolean;
-  onAdd: (car: CarInterface) => void;
+  carData: CarInterface | null;
+  onAdd: (newCar: CarInterface) => void;
+  onUpdate: (updatedCar: CarInterface) => void;
+  onDelete: (car: CarInterface) => void;
   onCancel: () => void;
 };
 
-export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
+export default function CarModal({
+  visible,
+  carData,
+  onAdd,
+  onUpdate,
+  onDelete,
+  onCancel,
+}: CarModalProps) {
   const [typeCar, setTypeCar] = useState("");
   const [brandCar, setBrandCar] = useState("");
   const [model, setModel] = useState("");
@@ -31,10 +41,26 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
   const [value, setValue] = useState("");
   const [fuelType, setFuelType] = useState("");
   const [imageCar, setImageCar] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const theme = useColorScheme();
 
-  // Função para resetar os campos
+  useEffect(() => {
+    if (carData) {
+      setTypeCar(carData.typeCar);
+      setBrandCar(carData.brandCar);
+      setModel(carData.model);
+      setYear(carData.year.toString());
+      setCondition(carData.condition);
+      setColor(carData.color);
+      setValue(carData.value.toString());
+      setFuelType(carData.fuelType);
+      setImageCar(carData.imageCar);
+    } else {
+      resetForm();
+    }
+  }, [carData]);
+
   const resetForm = () => {
     setTypeCar("");
     setBrandCar("");
@@ -45,31 +71,30 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
     setValue("");
     setFuelType("");
     setImageCar("");
+    setErrorMessage(null);
   };
 
   const handleAddCar = () => {
-    const valueNumber = parseFloat(value);
-    const yearNumber = parseInt(year);
-
     if (
-      valueNumber &&
-      yearNumber &&
       typeCar &&
       brandCar &&
       model &&
+      year &&
       condition &&
       color &&
+      value &&
       fuelType &&
       imageCar
     ) {
       const newCar: CarInterface = {
+        id: `${Date.now()}`,
         typeCar,
         brandCar,
         model,
-        year: yearNumber,
+        year: parseInt(year),
         condition,
         color,
-        value: valueNumber,
+        value: parseFloat(value),
         fuelType,
         imageCar,
       };
@@ -78,7 +103,49 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
       resetForm();
       onCancel();
     } else {
-      alert("Por favor, preencha todos os campos corretamente!");
+      setErrorMessage("Por favor, preencha todos os campos corretamente!");
+    }
+  };
+
+  const handleUpdateCar = () => {
+    if (
+      carData &&
+      typeCar &&
+      brandCar &&
+      model &&
+      year &&
+      condition &&
+      color &&
+      value &&
+      fuelType &&
+      imageCar
+    ) {
+      const updatedCar: CarInterface = {
+        ...carData,
+        typeCar,
+        brandCar,
+        model,
+        year: parseInt(year),
+        condition,
+        color,
+        value: parseFloat(value),
+        fuelType,
+        imageCar,
+      };
+
+      onUpdate(updatedCar);
+      resetForm();
+      onCancel();
+    } else {
+      setErrorMessage("Por favor, preencha todos os campos corretamente!");
+    }
+  };
+
+  const handleDeleteCar = () => {
+    if (carData) {
+      onDelete(carData);
+      resetForm();
+      onCancel();
     }
   };
 
@@ -91,7 +158,7 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
       transparent={true}
       onRequestClose={onCancel}
     >
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.modalBackground}>
           <KeyboardAvoidingView
             style={styles.container}
@@ -99,9 +166,12 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
           >
             <View style={styles.boxContainer}>
               <ScrollView contentContainerStyle={styles.scrollView}>
+                {errorMessage && (
+                  <Text style={styles.errorMessage}>{errorMessage}</Text>
+                )}
                 <TextInput
                   style={styles.boxInput}
-                  placeholder="Tipo do Veículo"
+                  placeholder="Tipo de Carro"
                   value={typeCar}
                   onChangeText={setTypeCar}
                   placeholderTextColor={placeholderColor}
@@ -123,9 +193,9 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
                 <TextInput
                   style={styles.boxInput}
                   placeholder="Ano"
-                  keyboardType="numeric"
                   value={year}
                   onChangeText={setYear}
+                  keyboardType="numeric"
                   placeholderTextColor={placeholderColor}
                 />
                 <TextInput
@@ -144,10 +214,10 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
                 />
                 <TextInput
                   style={styles.boxInput}
-                  placeholder="Preço"
-                  keyboardType="numeric"
+                  placeholder="Valor"
                   value={value}
                   onChangeText={setValue}
+                  keyboardType="numeric"
                   placeholderTextColor={placeholderColor}
                 />
                 <TextInput
@@ -159,7 +229,7 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
                 />
                 <TextInput
                   style={styles.boxInput}
-                  placeholder="URL da Imagem do Veículo"
+                  placeholder="URL da Imagem"
                   value={imageCar}
                   onChangeText={setImageCar}
                   placeholderTextColor={placeholderColor}
@@ -167,18 +237,32 @@ export default function CarModal({ visible, onAdd, onCancel }: CarModalProps) {
               </ScrollView>
 
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={styles.buttonAdd}
-                  onPress={handleAddCar}
-                >
-                  <Text style={styles.buttonText}>Adicionar</Text>
-                </TouchableOpacity>
+                {carData ? (
+                  <TouchableOpacity
+                    style={styles.buttonAdd}
+                    onPress={handleUpdateCar}
+                  >
+                    <Text style={styles.buttonText}>Atualizar</Text>
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.buttonAdd}
+                    onPress={handleAddCar}
+                  >
+                    <Text style={styles.buttonText}>Adicionar</Text>
+                  </TouchableOpacity>
+                )}
+                {carData && (
+                  <TouchableOpacity
+                    style={styles.buttonDelete}
+                    onPress={handleDeleteCar}
+                  >
+                    <Text style={styles.buttonText}>Deletar</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={styles.buttonCancel}
-                  onPress={() => {
-                    resetForm();
-                    onCancel();
-                  }}
+                  onPress={onCancel}
                 >
                   <Text style={styles.buttonText}>Cancelar</Text>
                 </TouchableOpacity>
@@ -199,16 +283,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   container: {
-    width: "90%",
+    width: "80%",
     maxHeight: "80%",
-    marginBottom: 20,
   },
   boxContainer: {
-    width: "100%",
     backgroundColor: "white",
     borderRadius: 10,
-    padding: 20,
-    justifyContent: "flex-start",
+    padding: 25,
     alignItems: "center",
   },
   scrollView: {
@@ -216,21 +297,26 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   boxInput: {
-    width: 250,
-    height: 45,
-    borderColor: "#ccc",
+    width: "100%",
+    height: 50,
     borderWidth: 1,
+    borderColor: "#ccc",
     marginBottom: 15,
-    paddingLeft: 10,
     borderRadius: 5,
+    paddingRight: "auto",
+    paddingVertical: 10,
     fontSize: 16,
-    textAlignVertical: "center",
+  },
+  errorMessage: {
+    color: "red",
+    marginBottom: 10,
+    fontSize: 14,
   },
   buttonContainer: {
     marginTop: 20,
-    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
+    width: "100%",
   },
   buttonAdd: {
     backgroundColor: "#4CAF50",
@@ -238,8 +324,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 5,
   },
-  buttonCancel: {
+  buttonDelete: {
     backgroundColor: "#F44336",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonCancel: {
+    backgroundColor: "#553533",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,

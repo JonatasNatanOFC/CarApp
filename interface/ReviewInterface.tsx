@@ -1,4 +1,5 @@
 export interface ReviewInterface {
+  id: number;
   deliveryDate: string;
   car: string;
   receivedDate: string;
