@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   boxInput: {
-    width: "100%",
+    width: 250,
     height: 50,
     borderWidth: 1,
     borderColor: "#ccc",

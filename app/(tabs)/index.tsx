@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   View,
@@ -11,29 +11,75 @@ import {
 import { CarInterface } from "../../interface/CarInterface";
 import CarModal from "../../components/modals/CarModal";
 import Icon from "react-native-vector-icons/FontAwesome";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
 
 export default function CarList() {
   const [carData, setCarData] = useState<CarInterface[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedCar, setSelectedCar] = useState<CarInterface | null>(null);
+
+  const [location, setLocation] = useState({});
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    async function getData() {
+      try {
+        const data = await AsyncStorage.getItem("@CarApp:cars");
+        const carsData = data != null ? JSON.parse(data) : [];
+        setCarData(carsData);
+      } catch (e) {}
+    }
+
+    getData();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to acess location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
+  let text = "Waiting...";
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+  }
+
   const theme = useColorScheme();
 
   const handleAddCar = (newCar: CarInterface) => {
-    setCarData((prevData) => [...prevData, newCar]);
+    setCarData((prevData) => {
+      const updatedData = [...prevData, newCar];
+      AsyncStorage.setItem("@CarApp:cars", JSON.stringify(updatedData));
+      return updatedData;
+    });
   };
 
   const handleUpdateCar = (updatedCar: CarInterface) => {
-    setCarData((prevData) =>
-      prevData.map((car) =>
+    setCarData((prevData) => {
+      const updatedData = prevData.map((car) =>
         car.id === updatedCar.id ? { ...car, ...updatedCar } : car
-      )
-    );
+      );
+      AsyncStorage.setItem("@CarApp:cars", JSON.stringify(updatedData));
+      return updatedData;
+    });
   };
 
   const handleDeleteCar = (carToDelete: CarInterface) => {
-    setCarData((prevData) =>
-      prevData.filter((car) => car.id !== carToDelete.id)
-    );
+    setCarData((prevData) => {
+      const updatedData = prevData.filter((car) => car.id !== carToDelete.id);
+      AsyncStorage.setItem("@CarApp:cars", JSON.stringify(updatedData));
+      return updatedData;
+    });
   };
 
   const openModal = (car: CarInterface | null = null) => {
@@ -85,6 +131,12 @@ export default function CarList() {
         style={[styles.title, { color: theme === "dark" ? "#fff" : "#000" }]}
       >
         Lista de Carros
+      </Text>
+      <Text
+        style={[styles.textGps, { color: theme === "dark" ? "#fff" : "#000" }]}
+      >
+        {" "}
+        {text}
       </Text>
       <FlatList
         data={carData}
@@ -138,8 +190,8 @@ const styles = StyleSheet.create({
     height: 250,
   },
   carImage: {
-    width: 120,
-    height: 120,
+    width: 100,
+    height: 60,
     borderRadius: 8,
     marginRight: 15,
   },
@@ -182,5 +234,9 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 20,
     fontWeight: "bold",
+  },
+  textGps: {
+    paddingBottom: 20,
+    fontSize: 8,
   },
 });
